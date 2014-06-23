@@ -6,7 +6,7 @@ public class CPU {
     private int index;
     private List<Process> processQueue;
     private int threshold;
-    private OnSendMessageListener onSendMessageListener;
+    private OnOverloadListener onOverloadListener;
 
     public CPU(int index, int threshold) {
         this.index = index;
@@ -14,27 +14,22 @@ public class CPU {
         processQueue = new LinkedList<Process>();
     }
 
-    public void setOnSendMessageListener(OnSendMessageListener onSendMessageListener) {
-        this.onSendMessageListener = onSendMessageListener;
+    public void setOnOverloadListener(OnOverloadListener onOverloadListener) {
+        this.onOverloadListener = onOverloadListener;
     }
 
-    // TODO: Remove more recent added
     public void addProcess(Process process) {
         processQueue.add(process);
 
         if (isOverloaded()) {
-            if (sendMessage(processQueue.get(0))) {
-                processQueue.remove(0);
+            if (onOverloadListener.sendMessage(index, process)) {
+                processQueue.remove(process);
             }
         }
     }
 
     // TODO: Implement update
     public void update() { }
-
-    private boolean sendMessage(Process processToDelegate) {
-        return onSendMessageListener.onSendMessage(index, processToDelegate);
-    }
 
     public boolean isOverloaded() {
         return processQueue.size() > threshold;
@@ -44,8 +39,8 @@ public class CPU {
         return index;
     }
 
-    public interface OnSendMessageListener {
-        public boolean onSendMessage(int index, Process process);
+    public interface OnOverloadListener {
+        public boolean sendMessage(int index, Process process);
     }
 
     @Override

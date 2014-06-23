@@ -11,7 +11,7 @@ public class MultiprocessorSystem {
 
     public void addCPU(CPU cpu) {
         cpuList.add(cpu);
-        cpu.setOnSendMessageListener(new OverloadedMessageSendListener());
+        cpu.setOnOverloadListener(new OverloadedMessageSendListener());
     }
 
     public void update() {
@@ -28,10 +28,10 @@ public class MultiprocessorSystem {
     }
 
     // TODO: Make it try N times
-    private class OverloadedMessageSendListener implements CPU.OnSendMessageListener {
+    private class OverloadedMessageSendListener implements CPU.OnOverloadListener {
 
         @Override
-        public boolean onSendMessage(int index, Process process) {
+        public boolean sendMessage(int index, Process process) {
             CPU cpu = null;
             cpu = pickAnotherCPU(index);
             if (cpu == null) {
