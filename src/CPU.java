@@ -5,12 +5,12 @@ public class CPU {
 
     private int index;
     private List<Process> processQueue;
-    private int threshold;
+    private int queueSize;
     private OnOverloadListener onOverloadListener;
 
-    public CPU(int index, int threshold) {
+    public CPU(int index, int queueSize) {
         this.index = index;
-        this.threshold = threshold;
+        this.queueSize = queueSize;
         processQueue = new LinkedList<Process>();
     }
 
@@ -32,7 +32,11 @@ public class CPU {
     public void update() { }
 
     public boolean isOverloaded() {
-        return processQueue.size() > threshold;
+        return processQueue.size() > queueSize;
+    }
+
+    public boolean doesAcceptProcess() {
+        return processQueue.size() < queueSize;
     }
 
     public int getIndex() {

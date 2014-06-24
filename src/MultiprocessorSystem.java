@@ -1,6 +1,8 @@
 import java.util.LinkedList;
 import java.util.List;
 
+// TODO: Store number of total messages of the system
+// TODO: Implement the other algorithm on another custom OnOverloadListener, with the necessary modifications
 public class MultiprocessorSystem {
 
     private List<CPU> cpuList;
@@ -11,7 +13,12 @@ public class MultiprocessorSystem {
 
     public void addCPU(CPU cpu) {
         cpuList.add(cpu);
-        cpu.setOnOverloadListener(new OverloadedMessageSendListener());
+        cpu.setOnOverloadListener(new CustomOnOverloadListener());
+    }
+
+    // TODO: Implement addProcess to add the process to a random CPU
+    public void addProcess(Process process) {
+
     }
 
     public void update() {
@@ -27,32 +34,23 @@ public class MultiprocessorSystem {
         System.out.println();
     }
 
-    // TODO: Make it try N times
-    private class OverloadedMessageSendListener implements CPU.OnOverloadListener {
+    // TODO: Make it random order each time
+    private class CustomOnOverloadListener implements CPU.OnOverloadListener {
 
         @Override
         public boolean sendMessage(int index, Process process) {
-            CPU cpu = null;
-            cpu = pickAnotherCPU(index);
-            if (cpu == null) {
-                System.out.println("ERROR: Message didn't reach anyone");
-                return false;
-            }
-            if (!cpu.isOverloaded()) {
-                cpu.addProcess(process);
-                return true;
-            }
-            return false;
-        }
-
-        // TODO: Make it random
-        private CPU pickAnotherCPU(int index){
+            CPU chosenCpu = null;
             for (CPU cpu : cpuList) {
-                if (cpu.getIndex() != index) {
-                    return cpu;
+                if (cpu.getIndex() != index && cpu.doesAcceptProcess()) {
+                    chosenCpu = cpu;
+                    break;
                 }
             }
-            return null;
+            if (chosenCpu == null) {
+                return false;
+            }
+            chosenCpu.addProcess(process);
+            return true;
         }
     }
 }
