@@ -4,47 +4,65 @@ import java.util.List;
 public class CPU {
 
     private int index;
-    private List<Process> processQueue;
+    private LinkedList<Process> processQueue;
+    private Process processRunning;
+    private int qtdeAllowedProcess = 3;
     private int queueSize;
-    private OnOverloadListener onOverloadListener;
 
     public CPU(int index, int queueSize) {
         this.index = index;
         this.queueSize = queueSize;
         processQueue = new LinkedList<Process>();
+        processRunning = null;
     }
 
-    public void setOnOverloadListener(OnOverloadListener onOverloadListener) {
-        this.onOverloadListener = onOverloadListener;
+    public boolean isIdle(){
+        return processRunning == null;
     }
 
     public void addProcess(Process process) {
-        processQueue.add(process);
-
-        if (isOverloaded()) {
-            if (onOverloadListener.sendMessage(index, process)) {
-                processQueue.remove(process);
-            }
-        }
+        if(isIdle())
+            processRunning = process;
+        else
+            processQueue.add(process);
     }
 
-    // TODO: Implement update
-    public void update() { }
+    public boolean update() {
+        if(isIdle())
+            return false;
+        processRunning.consumeOneClock();
+        if(processRunning.processFinished()){
+            if(processQueue.isEmpty())
+                processRunning = null;
+            else
+                processRunning = processQueue.remove();
+            return true;
+        }
+        return false;
+    }
 
     public boolean isOverloaded() {
-        return processQueue.size() > queueSize;
+        return processQueue.size() >= qtdeAllowedProcess;
     }
 
     public boolean doesAcceptProcess() {
-        return processQueue.size() < queueSize;
+        return !isOverloaded();
     }
 
     public int getIndex() {
         return index;
     }
 
-    public interface OnOverloadListener {
-        public boolean sendMessage(int index, Process process);
+    public boolean hasProcessWaiting(){
+        return processQueue.size() > 0;
+    }
+
+    public Process getLastProcess(){
+        return processQueue.getLast();
+    }
+
+    public void deleteLastProcess(){
+        processQueue.remove(processQueue.size()-1);
     }
 
     @Override
@@ -54,6 +72,10 @@ public class CPU {
 
     public void printState() {
         StringBuilder sb = new StringBuilder();
+        if (processRunning != null)
+            sb.append("y");
+        else
+            sb.append("n");
         for (Process process : processQueue) {
             sb.append(process).append(" ");
         }
